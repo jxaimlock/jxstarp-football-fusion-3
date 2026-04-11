@@ -1,0 +1,615 @@
+--=============================
+-- JXSTRAP (UPDATED CROSSHAIR HIDER)
+--=============================
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UIS = game:GetService("UserInputService")
+local Lighting = game:GetService("Lighting")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local player = Players.LocalPlayer
+
+--=============================
+-- MOBILE CONTROL FUNCTIONS (Reset + Freeze)
+--=============================
+
+local isFrozen = false
+
+local function performReset()
+    local char = player.Character
+    if char and char:FindFirstChild("Humanoid") then
+        char.Humanoid.Health = 0
+    end
+end
+
+local function toggleFreeze()
+    isFrozen = not isFrozen
+    local char = player.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        char.HumanoidRootPart.Anchored = isFrozen
+    end
+end
+
+--=============================
+-- GUI SETUP
+--=============================
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "JXSTRAP"
+gui.ResetOnSpawn = false
+gui.Parent = player:WaitForChild("PlayerGui")
+
+local main = Instance.new("Frame")
+main.Size = UDim2.new(0, 350, 0, 380) 
+main.Position = UDim2.new(0.5, -175, 0.5, -190)
+main.BackgroundColor3 = Color3.fromRGB(20,20,20)
+main.BorderSizePixel = 0
+main.ClipsDescendants = true
+main.Parent = gui
+
+local corner = Instance.new("UICorner", main)
+
+--=============================
+-- DRAG LOGIC
+--=============================
+
+local dragging, dragInput, dragStart, startPos
+local function update(input)
+    local delta = input.Position - dragStart
+    main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+local top = Instance.new("Frame")
+top.Size = UDim2.new(1,0,0,50)
+top.BackgroundColor3 = Color3.fromRGB(0,0,0)
+top.BorderSizePixel = 0
+top.Parent = main
+
+top.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = main.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then dragging = false end
+        end)
+    end
+end)
+
+top.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UIS.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then update(input) end
+end)
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1,-100,1,0)
+title.Position = UDim2.new(0,15,0,0)
+title.Text = "JXSTRAP"
+title.Font = Enum.Font.GothamBold
+title.TextSize = 20
+title.TextColor3 = Color3.fromRGB(255,255,255)
+title.BackgroundTransparency = 1
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = top
+
+local close = Instance.new("TextButton")
+close.Size = UDim2.new(0,35,0,35)
+close.Position = UDim2.new(1,-40,0,7)
+close.Text = "X"
+close.Font = Enum.Font.GothamBold
+close.BackgroundColor3 = Color3.fromRGB(140,0,0)
+close.TextColor3 = Color3.new(1,1,1)
+close.Parent = top
+Instance.new("UICorner", close)
+close.MouseButton1Click:Connect(function() gui:Destroy() end)
+
+local minimized = false
+local mini = Instance.new("TextButton")
+mini.Size = UDim2.new(0,35,0,35)
+mini.Position = UDim2.new(1,-80,0,7)
+mini.Text = "-"
+mini.Font = Enum.Font.GothamBold
+mini.BackgroundColor3 = Color3.fromRGB(60,60,60)
+mini.TextColor3 = Color3.new(1,1,1)
+mini.Parent = top
+Instance.new("UICorner", mini)
+
+local content = Instance.new("ScrollingFrame")
+content.Size = UDim2.new(1,0,1,-60)
+content.Position = UDim2.new(0,0,0,60)
+content.CanvasSize = UDim2.new(0,0,0,0)
+content.AutomaticCanvasSize = Enum.AutomaticSize.Y
+content.BackgroundTransparency = 1
+content.ScrollBarThickness = 4
+content.Parent = main
+
+mini.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    content.Visible = not minimized
+    main:TweenSize(minimized and UDim2.new(0, 350, 0, 50) or UDim2.new(0, 350, 0, 380), "Out", "Quad", 0.2, true)
+    mini.Text = minimized and "+" or "-"
+end)
+
+local layout = Instance.new("UIListLayout")
+layout.Padding = UDim.new(0,10)
+layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+layout.Parent = content
+Instance.new("UIPadding", content).PaddingTop = UDim.new(0,10)
+
+--=============================
+-- THEME SYSTEM
+--=============================
+
+local themes = {
+    {Name = "Dark", Main = Color3.fromRGB(20,20,20), Top = Color3.fromRGB(0,0,0)},
+    {Name = "Midnight", Main = Color3.fromRGB(15,20,35), Top = Color3.fromRGB(10,15,25)},
+    {Name = "Crimson", Main = Color3.fromRGB(35,15,15), Top = Color3.fromRGB(25,10,10)},
+    {Name = "Forest", Main = Color3.fromRGB(15,30,15), Top = Color3.fromRGB(10,20,10)}
+}
+local currentTheme = 1
+
+local themeBtn = Instance.new("TextButton")
+themeBtn.Size = UDim2.new(0.9,0,0,40)
+themeBtn.BackgroundColor3 = Color3.fromRGB(45,45,45)
+themeBtn.TextColor3 = Color3.new(1,1,1)
+themeBtn.Text = "Cycle Theme: Dark"
+themeBtn.Font = Enum.Font.GothamBold
+themeBtn.Parent = content
+Instance.new("UICorner", themeBtn)
+
+themeBtn.MouseButton1Click:Connect(function()
+    currentTheme = currentTheme + 1
+    if currentTheme > #themes then currentTheme = 1 end
+    local t = themes[currentTheme]
+    main.BackgroundColor3 = t.Main
+    top.BackgroundColor3 = t.Top
+    themeBtn.Text = "Cycle Theme: " .. t.Name
+end)
+
+--=============================
+-- FEATURES
+--=============================
+
+local function createToggle(name, callback)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0.9,0,0,40)
+    btn.BackgroundColor3 = Color3.fromRGB(35,35,35)
+    btn.TextColor3 = Color3.fromRGB(255,255,255)
+    btn.Font = Enum.Font.Gotham
+    btn.Text = name .. " [OFF]"
+    btn.Parent = content
+    Instance.new("UICorner", btn)
+
+    local on = false
+    btn.MouseButton1Click:Connect(function()
+        on = not on
+        btn.Text = name .. (on and " [ON]" or " [OFF]")
+        btn.BackgroundColor3 = on and Color3.fromRGB(60, 110, 60) or Color3.fromRGB(35,35,35)
+        callback(on)
+    end)
+end
+
+-- FPS INPUT
+local fpsBox = Instance.new("TextBox")
+fpsBox.Size = UDim2.new(0.9,0,0,40)
+fpsBox.Text = "Set FPS Limit"
+fpsBox.BackgroundColor3 = Color3.fromRGB(45,45,45)
+fpsBox.TextColor3 = Color3.new(1,1,1)
+fpsBox.Parent = content
+Instance.new("UICorner", fpsBox)
+fpsBox.FocusLost:Connect(function()
+    local fps = tonumber(fpsBox.Text)
+    if fps and setfpscap then setfpscap(fps) end
+end)
+
+-- ANTI ACE (NO UNI)
+local antiAceEnabled = false
+createToggle("Anti Ace (No Uni)", function(state)
+    antiAceEnabled = state
+end)
+
+local function runAntiAce()
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
+    local lastState = humanoid:GetState()
+
+    humanoid:GetPropertyChangedSignal("FloorMaterial"):Connect(function()
+        lastState = humanoid:GetState()
+    end)
+
+    while true do
+        task.wait(0.01)
+        if antiAceEnabled and player.Character == character then
+            local state = humanoid:GetState()
+            if state == Enum.HumanoidStateType.Jumping and
+               (lastState == Enum.HumanoidStateType.Running or lastState == Enum.HumanoidStateType.Landed) then
+                humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+                task.wait(0.01)
+                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+            lastState = state
+        elseif player.Character ~= character then
+            break 
+        end
+    end
+end
+
+task.spawn(runAntiAce)
+player.CharacterAdded:Connect(function()
+    task.spawn(runAntiAce)
+end)
+
+-- PINK SKY
+createToggle("Pink Sky", function(state)
+    if state then
+        for _,v in ipairs(Lighting:GetChildren()) do if v:IsA("Sky") then v:Destroy() end end
+        local sky = Instance.new("Sky")
+        sky.SkyboxUp = "rbxassetid://271042516"
+        sky.SkyboxDn = "rbxassetid://271042516"
+        sky.SkyboxLf = "rbxassetid://271042516"
+        sky.SkyboxRt = "rbxassetid://271042516"
+        sky.SkyboxFt = "rbxassetid://271042516"
+        sky.SkyboxBk = "rbxassetid://271042516"
+        sky.Parent = Lighting
+    end
+end)
+
+-- GREY BALL
+local greyBallEnabled = false
+createToggle("Grey Ball", function(state)
+    greyBallEnabled = state
+end)
+
+local function trySet(fn) pcall(fn) end
+local function clearTextures(inst)
+    trySet(function() inst.Texture = "" end)
+    trySet(function() inst.TextureId = "" end)
+    trySet(function() inst.TextureID = "" end)
+    trySet(function() inst.ColorMap = "" end)
+    trySet(function() inst.RoughnessMap = "" end)
+    trySet(function() inst.MetalnessMap = "" end)
+end
+
+local function whitenPart(part)
+    if not part or not part:IsA("BasePart") or not greyBallEnabled then return end
+    trySet(function()
+        part.Color = Color3.fromRGB(60,60,60)
+        part.BrickColor = BrickColor.new("dark stone grey")
+        part.Material = Enum.Material.SmoothPlastic
+        part.Reflectance = 0
+        part.Transparency = 0
+    end)
+    for _, obj in ipairs(part:GetDescendants()) do
+        if obj:IsA("Decal") or obj:IsA("Texture") or obj:IsA("SpecialMesh") or obj:IsA("MeshPart") or obj:IsA("SurfaceAppearance") then
+            clearTextures(obj)
+        end
+    end
+end
+
+local function processObject(obj)
+    if obj:IsA("BasePart") then
+        whitenPart(obj)
+        task.spawn(function()
+            while obj.Parent and greyBallEnabled do
+                task.wait(0.45)
+                whitenPart(obj)
+            end
+        end)
+    else
+        for _, d in ipairs(obj:GetDescendants()) do
+            if d:IsA("BasePart") and (string.find(d.Name:lower(), "ball") or string.find(d.Name:lower(), "football")) then
+                whitenPart(d)
+                task.spawn(function()
+                    while d.Parent and greyBallEnabled do
+                        task.wait(0.45)
+                        whitenPart(d)
+                    end
+                end)
+            end
+        end
+    end
+end
+
+workspace.DescendantAdded:Connect(function(obj)
+    if not greyBallEnabled then return end
+    task.wait(0.05)
+    local lname = obj.Name:lower()
+    if obj:IsA("BasePart") and (string.find(lname, "ball") or string.find(lname, "football")) then
+        processObject(obj)
+    else
+        local ancestor = obj:FindFirstAncestorWhichIsA("Model")
+        if ancestor and (string.find(ancestor.Name:lower(), "ball") or string.find(ancestor.Name:lower(), "football")) then
+            processObject(ancestor)
+        end
+    end
+end)
+
+-- NO CURSOR
+local noCursor = false
+local cursorConn
+createToggle("No Cursor", function(state)
+    noCursor = state
+    if state then
+        cursorConn = RunService.RenderStepped:Connect(function()
+            if noCursor then
+                UIS.MouseIconEnabled = false
+                local mouse = player:GetMouse()
+                if mouse then mouse.Icon = "rbxassetid://0" end
+            end
+        end)
+    else
+        if cursorConn then cursorConn:Disconnect() end
+        UIS.MouseIconEnabled = true
+        local mouse = player:GetMouse()
+        if mouse then mouse.Icon = "" end
+    end
+end)
+
+-- UNI SCRIPT
+local uniConn
+createToggle("Uni Script", function(state)
+    if not state then if uniConn then uniConn:Disconnect() end return end
+    local event = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("CharacterSoundEvent")
+    local function apply()
+        local char = player.Character or player.CharacterAdded:Wait()
+        task.wait(0.5)
+        if char:FindFirstChild("Uniform") then
+            event:FireServer("Game","Customization","Toggle","LeftGlove")
+            event:FireServer("Game","Customization","Toggle","RightGlove")
+            event:FireServer("Game","Customization","Number","0")
+            event:FireServer("Game","Customization","Name","                                ")
+        end
+    end
+    apply()
+    uniConn = player.CharacterAdded:Connect(apply)
+end)
+
+-- FPS DISPLAY
+local fpsL, fpsC
+createToggle("FPS Display", function(state)
+    if state then
+        fpsL = Instance.new("TextLabel", gui)
+        fpsL.Size = UDim2.new(0, 100, 0, 30)
+        fpsL.Position = UDim2.new(1, -110, 0, 10) 
+        fpsL.BackgroundColor3 = Color3.new(0,0,0)
+        fpsL.BackgroundTransparency = 0.5
+        fpsL.TextColor3 = Color3.new(0,1,0)
+        fpsL.Font = Enum.Font.Code
+        fpsL.TextSize = 14
+        Instance.new("UICorner", fpsL)
+        fpsC = RunService.RenderStepped:Connect(function(dt) fpsL.Text = "FPS: "..math.floor(1/dt) end)
+    else
+        if fpsL then fpsL:Destroy() end
+        if fpsC then fpsC:Disconnect() end
+    end
+end)
+
+--=============================
+-- JERSEY CUSTOMIZER (Apply button now next to text boxes)
+--=============================
+
+local jerseyTitle = Instance.new("TextLabel")
+jerseyTitle.Size = UDim2.new(0.9,0,0,30)
+jerseyTitle.BackgroundTransparency = 1
+jerseyTitle.Text = "--- JERSEY CUSTOMIZER ---"
+jerseyTitle.TextColor3 = Color3.fromRGB(150,150,150)
+jerseyTitle.Font = Enum.Font.GothamBold
+jerseyTitle.TextSize = 14
+jerseyTitle.Parent = content
+
+-- Horizontal row so Apply sits right next to the text boxes
+local jerseyRow = Instance.new("Frame")
+jerseyRow.Size = UDim2.new(0.9,0,0,45)
+jerseyRow.BackgroundTransparency = 1
+jerseyRow.Parent = content
+
+local rowLayout = Instance.new("UIListLayout", jerseyRow)
+rowLayout.FillDirection = Enum.FillDirection.Horizontal
+rowLayout.Padding = UDim.new(0,8)
+rowLayout.SortOrder = Enum.SortOrder.LayoutOrder
+
+local jerseyNameBox = Instance.new("TextBox")
+jerseyNameBox.Size = UDim2.new(0.55,0,1,0)
+jerseyNameBox.Text = ""
+jerseyNameBox.PlaceholderText = "Jersey Name"
+jerseyNameBox.BackgroundColor3 = Color3.fromRGB(45,45,45)
+jerseyNameBox.TextColor3 = Color3.new(1,1,1)
+jerseyNameBox.Font = Enum.Font.Gotham
+jerseyNameBox.Parent = jerseyRow
+Instance.new("UICorner", jerseyNameBox)
+
+local jerseyNumberBox = Instance.new("TextBox")
+jerseyNumberBox.Size = UDim2.new(0.22,0,1,0)
+jerseyNumberBox.Text = "0"
+jerseyNumberBox.PlaceholderText = "Number"
+jerseyNumberBox.BackgroundColor3 = Color3.fromRGB(45,45,45)
+jerseyNumberBox.TextColor3 = Color3.new(1,1,1)
+jerseyNumberBox.Font = Enum.Font.Gotham
+jerseyNumberBox.Parent = jerseyRow
+Instance.new("UICorner", jerseyNumberBox)
+
+local applyJerseyBtn = Instance.new("TextButton")
+applyJerseyBtn.Size = UDim2.new(0.23,0,1,0)
+applyJerseyBtn.BackgroundColor3 = Color3.fromRGB(35,35,35)
+applyJerseyBtn.TextColor3 = Color3.new(1,1,1)
+applyJerseyBtn.Text = "Apply"
+applyJerseyBtn.Font = Enum.Font.GothamBold
+applyJerseyBtn.Parent = jerseyRow
+Instance.new("UICorner", applyJerseyBtn)
+
+local soundEvent = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("CharacterSoundEvent")
+
+local function applyJerseyCustomization()
+    local character = player.Character or player.CharacterAdded:Wait()
+    if character:WaitForChild("Uniform", 5) then
+        soundEvent:FireServer("Game", "Customization", "Toggle", "LeftGlove")
+        soundEvent:FireServer("Game", "Customization", "Toggle", "RightGlove")
+        soundEvent:FireServer("Game", "Customization", "Number", jerseyNumberBox.Text)
+        soundEvent:FireServer("Game", "Customization", "Name", jerseyNameBox.Text)
+    end
+end
+
+applyJerseyBtn.MouseButton1Click:Connect(applyJerseyCustomization)
+
+--=============================
+-- MOBILE CONTROLS (Reset + Freeze buttons)
+--=============================
+
+local mobileTitle = Instance.new("TextLabel")
+mobileTitle.Size = UDim2.new(0.9,0,0,30)
+mobileTitle.BackgroundTransparency = 1
+mobileTitle.Text = "--- MOBILE CONTROLS ---"
+mobileTitle.TextColor3 = Color3.fromRGB(150,150,150)
+mobileTitle.Font = Enum.Font.GothamBold
+mobileTitle.TextSize = 14
+mobileTitle.Parent = content
+
+local resetBtn = Instance.new("TextButton")
+resetBtn.Size = UDim2.new(0.9,0,0,45)
+resetBtn.BackgroundColor3 = Color3.fromRGB(200,50,50)
+resetBtn.TextColor3 = Color3.new(1,1,1)
+resetBtn.Text = "RESET CHARACTER (RST)"
+resetBtn.Font = Enum.Font.GothamBold
+resetBtn.Parent = content
+Instance.new("UICorner", resetBtn)
+resetBtn.MouseButton1Click:Connect(performReset)
+
+local freezeBtn = Instance.new("TextButton")
+freezeBtn.Size = UDim2.new(0.9,0,0,45)
+freezeBtn.BackgroundColor3 = Color3.fromRGB(35,35,35)
+freezeBtn.TextColor3 = Color3.new(1,1,1)
+freezeBtn.Text = "FREEZE / UNFREEZE (FRZ)"
+freezeBtn.Font = Enum.Font.GothamBold
+freezeBtn.Parent = content
+Instance.new("UICorner", freezeBtn)
+
+local freezeStateLabel = false
+freezeBtn.MouseButton1Click:Connect(function()
+    toggleFreeze()
+    freezeBtn.Text = isFrozen and "UNFREEZE (FRZ)" or "FREEZE / UNFREEZE (FRZ)"
+    freezeBtn.BackgroundColor3 = isFrozen and Color3.fromRGB(60,110,60) or Color3.fromRGB(35,35,35)
+end)
+
+--=============================
+-- EXTERNAL SCRIPTS
+--=============================
+
+local extTitle = Instance.new("TextLabel")
+extTitle.Size = UDim2.new(0.9,0,0,30)
+extTitle.BackgroundTransparency = 1
+extTitle.Text = "--- EXTERNAL SCRIPTS ---"
+extTitle.TextColor3 = Color3.fromRGB(150,150,150)
+extTitle.Font = Enum.Font.GothamBold
+extTitle.TextSize = 14
+extTitle.Parent = content
+
+-- Bloxstrap Button
+local bloxBtn = Instance.new("TextButton")
+bloxBtn.Size = UDim2.new(0.9,0,0,40)
+bloxBtn.BackgroundColor3 = Color3.fromRGB(35,35,35)
+bloxBtn.TextColor3 = Color3.new(1,1,1)
+bloxBtn.Text = "Load Bloxstrap"
+bloxBtn.Font = Enum.Font.GothamBold
+bloxBtn.Parent = content
+Instance.new("UICorner", bloxBtn)
+
+bloxBtn.MouseButton1Click:Connect(function()
+    local hidegui = getgenv().hideui or false
+    local cloneref: () -> () = cloneref or function(...): (...any) -> (...any) return (...) end
+    local httpservice = cloneref(game:GetService('HttpService'))
+    local getasync: () -> () = function(string: string): (string) -> (string)
+    return game:HttpGet(string, true)
+    end
+    makefolder('Bloxstrap');
+    makefolder('Bloxstrap/Main');
+    makefolder('Bloxstrap/Main/Functions');
+    makefolder('Bloxstrap/Main/Configs');
+    makefolder('Bloxstrap/Main/Fonts')
+    makefolder('Bloxstrap/Images')
+    local install: () -> () = function(config: {path: string, setup: boolean}): (table) -> ()
+    config = config or {}
+    for i: number, v: table in httpservice:JSONDecode(getasync('https://api.github.com/repos/qwertyui-is-back/Bloxstrap/contents/')) do
+    if v.name:find('.lua') then
+    writefile(`Bloxstrap/{v.name}`, `return loadstring(game:HttpGet('https://raw.githubusercontent.com/qwertyui-is-back/Bloxstrap/refs/heads/main/{v.name}', true))()`);
+    elseif v.name:find('.mp3') or v.name:find('.png') then
+    writefile(`Bloxstrap/{v.name}`, game:HttpGet(`https://raw.githubusercontent.com/qwertyui-is-back/Bloxstrap/refs/heads/main/{v.name}`));
+    end;
+    end;
+    writefile(`Bloxstrap/Main/Bloxstrap.lua`, `return loadstring(game:HttpGet('https://raw.githubusercontent.com/qwertyui-is-back/Bloxstrap/refs/heads/main/Main/Bloxstrap.lua', true))()`);
+    for i: number, v: table in httpservice:JSONDecode(getasync('https://api.github.com/repos/qwertyui-is-back/Bloxstrap/contents/Main/Functions')) do
+    writefile(`Bloxstrap/Main/Functions/{v.name}`, `return loadstring(game:HttpGet('https://raw.githubusercontent.com/qwertyui-is-back/Bloxstrap/refs/heads/main/Main/Functions/{v.name}', true))()`);
+    end;
+    writefile("Bloxstrap/Main/Configs/Default.json", "{}")
+    end;
+    if (not isfolder('Bloxstrap') or #listfiles('Bloxstrap') <= 6) then
+    install({})
+    end
+    local Bloxstrap: table = loadfile('Bloxstrap/Main/Bloxstrap.lua')()
+    Bloxstrap.start()
+    Bloxstrap.Visible(not hidegui)
+end)
+
+-- Slump Strap V2 Button
+local slumpBtn = Instance.new("TextButton")
+slumpBtn.Size = UDim2.new(0.9,0,0,40)
+slumpBtn.BackgroundColor3 = Color3.fromRGB(35,35,35)
+slumpBtn.TextColor3 = Color3.new(1,1,1)
+slumpBtn.Text = "Load Slump Strap V2"
+slumpBtn.Font = Enum.Font.GothamBold
+slumpBtn.Parent = content
+Instance.new("UICorner", slumpBtn)
+
+slumpBtn.MouseButton1Click:Connect(function()
+    loadstring(game:HttpGet("https://pastebin.com/raw/taU4FJnS"))()
+end)
+
+--=============================
+-- FONTS SECTION
+--=============================
+
+local fontTitle = Instance.new("TextLabel")
+fontTitle.Size = UDim2.new(0.9,0,0,30)
+fontTitle.BackgroundTransparency = 1
+fontTitle.Text = "--- GLOBAL FONTS ---"
+fontTitle.TextColor3 = Color3.fromRGB(150,150,150)
+fontTitle.Font = Enum.Font.GothamBold
+fontTitle.TextSize = 14
+fontTitle.Parent = content
+
+local fontsList = {
+    "SourceSans","SourceSansBold","Gotham","GothamBold","Arcade","ArcadeBold",
+    "Arial","ArialBold","Roboto","RobotoMono","Highway","HighwayBold",
+    "GothamBlack","Cartoon","CartoonBold","Fantasy","FantasyBold","SciFi","SciFiBold","Code"
+}
+
+for _, fname in ipairs(fontsList) do
+    local b = Instance.new("TextButton")
+    b.Size = UDim2.new(0.9, 0, 0, 35)
+    b.Text = fname
+    b.TextColor3 = Color3.new(1,1,1)
+    b.BackgroundColor3 = Color3.fromRGB(35,35,35)
+    b.Font = Enum.Font.SourceSansBold
+    b.Parent = content
+    Instance.new("UICorner", b)
+
+    b.MouseButton1Click:Connect(function()
+        for _,v in pairs(game:GetDescendants()) do
+            if v:IsA("TextLabel") or v:IsA("TextButton") or v:IsA("TextBox") then
+                pcall(function() v.Font = Enum.Font[fname] end)
+            end
+        end
+    end)
+end
+
+-- CONTROLLER FREEZE (At end to avoid loadstring hanging UI)
+createToggle("Controller Freeze", function(state)
+    if state then
+        loadstring(game:HttpGet("https://gist.githubusercontent.com/Kayceedadon/91b6d31a8a2701d27406fc2823969f45/raw/021e7265f782a6982adf35beaaaccddd2f89a6fb/script.lua"))()
+    end
+end)

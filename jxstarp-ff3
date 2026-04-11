@@ -11,27 +11,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = Players.LocalPlayer
 
 --=============================
--- MOBILE CONTROL FUNCTIONS (Reset + Freeze)
---=============================
-
-local isFrozen = false
-
-local function performReset()
-    local char = player.Character
-    if char and char:FindFirstChild("Humanoid") then
-        char.Humanoid.Health = 0
-    end
-end
-
-local function toggleFreeze()
-    isFrozen = not isFrozen
-    local char = player.Character
-    if char and char:FindFirstChild("HumanoidRootPart") then
-        char.HumanoidRootPart.Anchored = isFrozen
-    end
-end
-
---=============================
 -- GUI SETUP
 --=============================
 
@@ -391,7 +370,7 @@ createToggle("FPS Display", function(state)
 end)
 
 --=============================
--- JERSEY CUSTOMIZER (Apply button now next to text boxes)
+-- JERSEY CUSTOMIZER
 --=============================
 
 local jerseyTitle = Instance.new("TextLabel")
@@ -403,44 +382,33 @@ jerseyTitle.Font = Enum.Font.GothamBold
 jerseyTitle.TextSize = 14
 jerseyTitle.Parent = content
 
--- Horizontal row so Apply sits right next to the text boxes
-local jerseyRow = Instance.new("Frame")
-jerseyRow.Size = UDim2.new(0.9,0,0,45)
-jerseyRow.BackgroundTransparency = 1
-jerseyRow.Parent = content
-
-local rowLayout = Instance.new("UIListLayout", jerseyRow)
-rowLayout.FillDirection = Enum.FillDirection.Horizontal
-rowLayout.Padding = UDim.new(0,8)
-rowLayout.SortOrder = Enum.SortOrder.LayoutOrder
-
 local jerseyNameBox = Instance.new("TextBox")
-jerseyNameBox.Size = UDim2.new(0.55,0,1,0)
-jerseyNameBox.Text = ""
-jerseyNameBox.PlaceholderText = "Jersey Name"
+jerseyNameBox.Size = UDim2.new(0.9,0,0,40)
+jerseyNameBox.Text = "lazy is back!"
+jerseyNameBox.PlaceholderText = "Jersey Name (Back of Jersey)"
 jerseyNameBox.BackgroundColor3 = Color3.fromRGB(45,45,45)
 jerseyNameBox.TextColor3 = Color3.new(1,1,1)
 jerseyNameBox.Font = Enum.Font.Gotham
-jerseyNameBox.Parent = jerseyRow
+jerseyNameBox.Parent = content
 Instance.new("UICorner", jerseyNameBox)
 
 local jerseyNumberBox = Instance.new("TextBox")
-jerseyNumberBox.Size = UDim2.new(0.22,0,1,0)
+jerseyNumberBox.Size = UDim2.new(0.9,0,0,40)
 jerseyNumberBox.Text = "0"
-jerseyNumberBox.PlaceholderText = "Number"
+jerseyNumberBox.PlaceholderText = "Jersey Number"
 jerseyNumberBox.BackgroundColor3 = Color3.fromRGB(45,45,45)
 jerseyNumberBox.TextColor3 = Color3.new(1,1,1)
 jerseyNumberBox.Font = Enum.Font.Gotham
-jerseyNumberBox.Parent = jerseyRow
+jerseyNumberBox.Parent = content
 Instance.new("UICorner", jerseyNumberBox)
 
 local applyJerseyBtn = Instance.new("TextButton")
-applyJerseyBtn.Size = UDim2.new(0.23,0,1,0)
+applyJerseyBtn.Size = UDim2.new(0.9,0,0,40)
 applyJerseyBtn.BackgroundColor3 = Color3.fromRGB(35,35,35)
 applyJerseyBtn.TextColor3 = Color3.new(1,1,1)
-applyJerseyBtn.Text = "Apply"
+applyJerseyBtn.Text = "Apply Jersey Customization"
 applyJerseyBtn.Font = Enum.Font.GothamBold
-applyJerseyBtn.Parent = jerseyRow
+applyJerseyBtn.Parent = content
 Instance.new("UICorner", applyJerseyBtn)
 
 local soundEvent = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("CharacterSoundEvent")
@@ -458,45 +426,6 @@ end
 applyJerseyBtn.MouseButton1Click:Connect(applyJerseyCustomization)
 
 --=============================
--- MOBILE CONTROLS (Reset + Freeze buttons)
---=============================
-
-local mobileTitle = Instance.new("TextLabel")
-mobileTitle.Size = UDim2.new(0.9,0,0,30)
-mobileTitle.BackgroundTransparency = 1
-mobileTitle.Text = "--- MOBILE CONTROLS ---"
-mobileTitle.TextColor3 = Color3.fromRGB(150,150,150)
-mobileTitle.Font = Enum.Font.GothamBold
-mobileTitle.TextSize = 14
-mobileTitle.Parent = content
-
-local resetBtn = Instance.new("TextButton")
-resetBtn.Size = UDim2.new(0.9,0,0,45)
-resetBtn.BackgroundColor3 = Color3.fromRGB(200,50,50)
-resetBtn.TextColor3 = Color3.new(1,1,1)
-resetBtn.Text = "RESET CHARACTER (RST)"
-resetBtn.Font = Enum.Font.GothamBold
-resetBtn.Parent = content
-Instance.new("UICorner", resetBtn)
-resetBtn.MouseButton1Click:Connect(performReset)
-
-local freezeBtn = Instance.new("TextButton")
-freezeBtn.Size = UDim2.new(0.9,0,0,45)
-freezeBtn.BackgroundColor3 = Color3.fromRGB(35,35,35)
-freezeBtn.TextColor3 = Color3.new(1,1,1)
-freezeBtn.Text = "FREEZE / UNFREEZE (FRZ)"
-freezeBtn.Font = Enum.Font.GothamBold
-freezeBtn.Parent = content
-Instance.new("UICorner", freezeBtn)
-
-local freezeStateLabel = false
-freezeBtn.MouseButton1Click:Connect(function()
-    toggleFreeze()
-    freezeBtn.Text = isFrozen and "UNFREEZE (FRZ)" or "FREEZE / UNFREEZE (FRZ)"
-    freezeBtn.BackgroundColor3 = isFrozen and Color3.fromRGB(60,110,60) or Color3.fromRGB(35,35,35)
-end)
-
---=============================
 -- EXTERNAL SCRIPTS
 --=============================
 
@@ -508,52 +437,6 @@ extTitle.TextColor3 = Color3.fromRGB(150,150,150)
 extTitle.Font = Enum.Font.GothamBold
 extTitle.TextSize = 14
 extTitle.Parent = content
-
--- Bloxstrap Button
-local bloxBtn = Instance.new("TextButton")
-bloxBtn.Size = UDim2.new(0.9,0,0,40)
-bloxBtn.BackgroundColor3 = Color3.fromRGB(35,35,35)
-bloxBtn.TextColor3 = Color3.new(1,1,1)
-bloxBtn.Text = "Load Bloxstrap"
-bloxBtn.Font = Enum.Font.GothamBold
-bloxBtn.Parent = content
-Instance.new("UICorner", bloxBtn)
-
-bloxBtn.MouseButton1Click:Connect(function()
-    local hidegui = getgenv().hideui or false
-    local cloneref: () -> () = cloneref or function(...): (...any) -> (...any) return (...) end
-    local httpservice = cloneref(game:GetService('HttpService'))
-    local getasync: () -> () = function(string: string): (string) -> (string)
-    return game:HttpGet(string, true)
-    end
-    makefolder('Bloxstrap');
-    makefolder('Bloxstrap/Main');
-    makefolder('Bloxstrap/Main/Functions');
-    makefolder('Bloxstrap/Main/Configs');
-    makefolder('Bloxstrap/Main/Fonts')
-    makefolder('Bloxstrap/Images')
-    local install: () -> () = function(config: {path: string, setup: boolean}): (table) -> ()
-    config = config or {}
-    for i: number, v: table in httpservice:JSONDecode(getasync('https://api.github.com/repos/qwertyui-is-back/Bloxstrap/contents/')) do
-    if v.name:find('.lua') then
-    writefile(`Bloxstrap/{v.name}`, `return loadstring(game:HttpGet('https://raw.githubusercontent.com/qwertyui-is-back/Bloxstrap/refs/heads/main/{v.name}', true))()`);
-    elseif v.name:find('.mp3') or v.name:find('.png') then
-    writefile(`Bloxstrap/{v.name}`, game:HttpGet(`https://raw.githubusercontent.com/qwertyui-is-back/Bloxstrap/refs/heads/main/{v.name}`));
-    end;
-    end;
-    writefile(`Bloxstrap/Main/Bloxstrap.lua`, `return loadstring(game:HttpGet('https://raw.githubusercontent.com/qwertyui-is-back/Bloxstrap/refs/heads/main/Main/Bloxstrap.lua', true))()`);
-    for i: number, v: table in httpservice:JSONDecode(getasync('https://api.github.com/repos/qwertyui-is-back/Bloxstrap/contents/Main/Functions')) do
-    writefile(`Bloxstrap/Main/Functions/{v.name}`, `return loadstring(game:HttpGet('https://raw.githubusercontent.com/qwertyui-is-back/Bloxstrap/refs/heads/main/Main/Functions/{v.name}', true))()`);
-    end;
-    writefile("Bloxstrap/Main/Configs/Default.json", "{}")
-    end;
-    if (not isfolder('Bloxstrap') or #listfiles('Bloxstrap') <= 6) then
-    install({})
-    end
-    local Bloxstrap: table = loadfile('Bloxstrap/Main/Bloxstrap.lua')()
-    Bloxstrap.start()
-    Bloxstrap.Visible(not hidegui)
-end)
 
 -- Slump Strap V2 Button
 local slumpBtn = Instance.new("TextButton")

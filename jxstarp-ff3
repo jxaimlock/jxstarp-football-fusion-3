@@ -1,50 +1,40 @@
 --=============================
--- JXSTRAP (UPDATED CROSSHAIR HIDER)
+-- MANCHO OR EL MANCHO (UPDATED CROSSHAIR HIDER)
 --=============================
-
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
 local Lighting = game:GetService("Lighting")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
 local player = Players.LocalPlayer
-
 --=============================
 -- GUI SETUP
 --=============================
-
 local gui = Instance.new("ScreenGui")
-gui.Name = "JXSTRAP"
+gui.Name = "MANCHO OR EL MANCHO"
 gui.ResetOnSpawn = false
 gui.Parent = player:WaitForChild("PlayerGui")
-
 local main = Instance.new("Frame")
-main.Size = UDim2.new(0, 350, 0, 380) 
+main.Size = UDim2.new(0, 350, 0, 380)
 main.Position = UDim2.new(0.5, -175, 0.5, -190)
 main.BackgroundColor3 = Color3.fromRGB(20,20,20)
 main.BorderSizePixel = 0
 main.ClipsDescendants = true
 main.Parent = gui
-
 local corner = Instance.new("UICorner", main)
-
 --=============================
 -- DRAG LOGIC
 --=============================
-
 local dragging, dragInput, dragStart, startPos
 local function update(input)
     local delta = input.Position - dragStart
     main.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 end
-
 local top = Instance.new("Frame")
 top.Size = UDim2.new(1,0,0,50)
 top.BackgroundColor3 = Color3.fromRGB(0,0,0)
 top.BorderSizePixel = 0
 top.Parent = main
-
 top.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         dragging = true
@@ -55,28 +45,24 @@ top.InputBegan:Connect(function(input)
         end)
     end
 end)
-
 top.InputChanged:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
         dragInput = input
     end
 end)
-
 UIS.InputChanged:Connect(function(input)
     if input == dragInput and dragging then update(input) end
 end)
-
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1,-100,1,0)
 title.Position = UDim2.new(0,15,0,0)
-title.Text = "JXSTRAP"
+title.Text = "MANCHO OR EL MANCHO"
 title.Font = Enum.Font.GothamBold
 title.TextSize = 20
 title.TextColor3 = Color3.fromRGB(255,255,255)
 title.BackgroundTransparency = 1
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = top
-
 local close = Instance.new("TextButton")
 close.Size = UDim2.new(0,35,0,35)
 close.Position = UDim2.new(1,-40,0,7)
@@ -87,7 +73,6 @@ close.TextColor3 = Color3.new(1,1,1)
 close.Parent = top
 Instance.new("UICorner", close)
 close.MouseButton1Click:Connect(function() gui:Destroy() end)
-
 local minimized = false
 local mini = Instance.new("TextButton")
 mini.Size = UDim2.new(0,35,0,35)
@@ -98,7 +83,6 @@ mini.BackgroundColor3 = Color3.fromRGB(60,60,60)
 mini.TextColor3 = Color3.new(1,1,1)
 mini.Parent = top
 Instance.new("UICorner", mini)
-
 local content = Instance.new("ScrollingFrame")
 content.Size = UDim2.new(1,0,1,-60)
 content.Position = UDim2.new(0,0,0,60)
@@ -107,24 +91,20 @@ content.AutomaticCanvasSize = Enum.AutomaticSize.Y
 content.BackgroundTransparency = 1
 content.ScrollBarThickness = 4
 content.Parent = main
-
 mini.MouseButton1Click:Connect(function()
     minimized = not minimized
     content.Visible = not minimized
     main:TweenSize(minimized and UDim2.new(0, 350, 0, 50) or UDim2.new(0, 350, 0, 380), "Out", "Quad", 0.2, true)
     mini.Text = minimized and "+" or "-"
 end)
-
 local layout = Instance.new("UIListLayout")
 layout.Padding = UDim.new(0,10)
 layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 layout.Parent = content
 Instance.new("UIPadding", content).PaddingTop = UDim.new(0,10)
-
 --=============================
 -- THEME SYSTEM
 --=============================
-
 local themes = {
     {Name = "Dark", Main = Color3.fromRGB(20,20,20), Top = Color3.fromRGB(0,0,0)},
     {Name = "Midnight", Main = Color3.fromRGB(15,20,35), Top = Color3.fromRGB(10,15,25)},
@@ -132,7 +112,6 @@ local themes = {
     {Name = "Forest", Main = Color3.fromRGB(15,30,15), Top = Color3.fromRGB(10,20,10)}
 }
 local currentTheme = 1
-
 local themeBtn = Instance.new("TextButton")
 themeBtn.Size = UDim2.new(0.9,0,0,40)
 themeBtn.BackgroundColor3 = Color3.fromRGB(45,45,45)
@@ -141,7 +120,6 @@ themeBtn.Text = "Cycle Theme: Dark"
 themeBtn.Font = Enum.Font.GothamBold
 themeBtn.Parent = content
 Instance.new("UICorner", themeBtn)
-
 themeBtn.MouseButton1Click:Connect(function()
     currentTheme = currentTheme + 1
     if currentTheme > #themes then currentTheme = 1 end
@@ -150,11 +128,9 @@ themeBtn.MouseButton1Click:Connect(function()
     top.BackgroundColor3 = t.Top
     themeBtn.Text = "Cycle Theme: " .. t.Name
 end)
-
 --=============================
 -- FEATURES
 --=============================
-
 local function createToggle(name, callback)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(0.9,0,0,40)
@@ -164,7 +140,6 @@ local function createToggle(name, callback)
     btn.Text = name .. " [OFF]"
     btn.Parent = content
     Instance.new("UICorner", btn)
-
     local on = false
     btn.MouseButton1Click:Connect(function()
         on = not on
@@ -173,7 +148,6 @@ local function createToggle(name, callback)
         callback(on)
     end)
 end
-
 -- FPS INPUT
 local fpsBox = Instance.new("TextBox")
 fpsBox.Size = UDim2.new(0.9,0,0,40)
@@ -186,22 +160,18 @@ fpsBox.FocusLost:Connect(function()
     local fps = tonumber(fpsBox.Text)
     if fps and setfpscap then setfpscap(fps) end
 end)
-
 -- ANTI ACE (NO UNI)
 local antiAceEnabled = false
 createToggle("Anti Ace (No Uni)", function(state)
     antiAceEnabled = state
 end)
-
 local function runAntiAce()
     local character = player.Character or player.CharacterAdded:Wait()
     local humanoid = character:WaitForChild("Humanoid")
     local lastState = humanoid:GetState()
-
     humanoid:GetPropertyChangedSignal("FloorMaterial"):Connect(function()
         lastState = humanoid:GetState()
     end)
-
     while true do
         task.wait(0.01)
         if antiAceEnabled and player.Character == character then
@@ -214,16 +184,14 @@ local function runAntiAce()
             end
             lastState = state
         elseif player.Character ~= character then
-            break 
+            break
         end
     end
 end
-
 task.spawn(runAntiAce)
 player.CharacterAdded:Connect(function()
     task.spawn(runAntiAce)
 end)
-
 -- PINK SKY
 createToggle("Pink Sky", function(state)
     if state then
@@ -238,13 +206,11 @@ createToggle("Pink Sky", function(state)
         sky.Parent = Lighting
     end
 end)
-
 -- GREY BALL
 local greyBallEnabled = false
 createToggle("Grey Ball", function(state)
     greyBallEnabled = state
 end)
-
 local function trySet(fn) pcall(fn) end
 local function clearTextures(inst)
     trySet(function() inst.Texture = "" end)
@@ -254,7 +220,6 @@ local function clearTextures(inst)
     trySet(function() inst.RoughnessMap = "" end)
     trySet(function() inst.MetalnessMap = "" end)
 end
-
 local function whitenPart(part)
     if not part or not part:IsA("BasePart") or not greyBallEnabled then return end
     trySet(function()
@@ -270,7 +235,6 @@ local function whitenPart(part)
         end
     end
 end
-
 local function processObject(obj)
     if obj:IsA("BasePart") then
         whitenPart(obj)
@@ -294,7 +258,6 @@ local function processObject(obj)
         end
     end
 end
-
 workspace.DescendantAdded:Connect(function(obj)
     if not greyBallEnabled then return end
     task.wait(0.05)
@@ -308,7 +271,6 @@ workspace.DescendantAdded:Connect(function(obj)
         end
     end
 end)
-
 -- NO CURSOR
 local noCursor = false
 local cursorConn
@@ -329,7 +291,6 @@ createToggle("No Cursor", function(state)
         if mouse then mouse.Icon = "" end
     end
 end)
-
 -- UNI SCRIPT
 local uniConn
 createToggle("Uni Script", function(state)
@@ -342,20 +303,19 @@ createToggle("Uni Script", function(state)
             event:FireServer("Game","Customization","Toggle","LeftGlove")
             event:FireServer("Game","Customization","Toggle","RightGlove")
             event:FireServer("Game","Customization","Number","0")
-            event:FireServer("Game","Customization","Name","                                ")
+            event:FireServer("Game","Customization","Name"," ")
         end
     end
     apply()
     uniConn = player.CharacterAdded:Connect(apply)
 end)
-
 -- FPS DISPLAY
 local fpsL, fpsC
 createToggle("FPS Display", function(state)
     if state then
         fpsL = Instance.new("TextLabel", gui)
         fpsL.Size = UDim2.new(0, 100, 0, 30)
-        fpsL.Position = UDim2.new(1, -110, 0, 10) 
+        fpsL.Position = UDim2.new(1, -110, 0, 10)
         fpsL.BackgroundColor3 = Color3.new(0,0,0)
         fpsL.BackgroundTransparency = 0.5
         fpsL.TextColor3 = Color3.new(0,1,0)
@@ -368,11 +328,9 @@ createToggle("FPS Display", function(state)
         if fpsC then fpsC:Disconnect() end
     end
 end)
-
 --=============================
 -- JERSEY CUSTOMIZER
 --=============================
-
 local jerseyTitle = Instance.new("TextLabel")
 jerseyTitle.Size = UDim2.new(0.9,0,0,30)
 jerseyTitle.BackgroundTransparency = 1
@@ -381,7 +339,6 @@ jerseyTitle.TextColor3 = Color3.fromRGB(150,150,150)
 jerseyTitle.Font = Enum.Font.GothamBold
 jerseyTitle.TextSize = 14
 jerseyTitle.Parent = content
-
 local jerseyNameBox = Instance.new("TextBox")
 jerseyNameBox.Size = UDim2.new(0.9,0,0,40)
 jerseyNameBox.Text = "lazy is back!"
@@ -391,7 +348,6 @@ jerseyNameBox.TextColor3 = Color3.new(1,1,1)
 jerseyNameBox.Font = Enum.Font.Gotham
 jerseyNameBox.Parent = content
 Instance.new("UICorner", jerseyNameBox)
-
 local jerseyNumberBox = Instance.new("TextBox")
 jerseyNumberBox.Size = UDim2.new(0.9,0,0,40)
 jerseyNumberBox.Text = "0"
@@ -401,7 +357,6 @@ jerseyNumberBox.TextColor3 = Color3.new(1,1,1)
 jerseyNumberBox.Font = Enum.Font.Gotham
 jerseyNumberBox.Parent = content
 Instance.new("UICorner", jerseyNumberBox)
-
 local applyJerseyBtn = Instance.new("TextButton")
 applyJerseyBtn.Size = UDim2.new(0.9,0,0,40)
 applyJerseyBtn.BackgroundColor3 = Color3.fromRGB(35,35,35)
@@ -410,9 +365,7 @@ applyJerseyBtn.Text = "Apply Jersey Customization"
 applyJerseyBtn.Font = Enum.Font.GothamBold
 applyJerseyBtn.Parent = content
 Instance.new("UICorner", applyJerseyBtn)
-
 local soundEvent = ReplicatedStorage:WaitForChild("Remotes"):WaitForChild("CharacterSoundEvent")
-
 local function applyJerseyCustomization()
     local character = player.Character or player.CharacterAdded:Wait()
     if character:WaitForChild("Uniform", 5) then
@@ -422,13 +375,10 @@ local function applyJerseyCustomization()
         soundEvent:FireServer("Game", "Customization", "Name", jerseyNameBox.Text)
     end
 end
-
 applyJerseyBtn.MouseButton1Click:Connect(applyJerseyCustomization)
-
 --=============================
 -- EXTERNAL SCRIPTS
 --=============================
-
 local extTitle = Instance.new("TextLabel")
 extTitle.Size = UDim2.new(0.9,0,0,30)
 extTitle.BackgroundTransparency = 1
@@ -437,7 +387,6 @@ extTitle.TextColor3 = Color3.fromRGB(150,150,150)
 extTitle.Font = Enum.Font.GothamBold
 extTitle.TextSize = 14
 extTitle.Parent = content
-
 -- Slump Strap V2 Button
 local slumpBtn = Instance.new("TextButton")
 slumpBtn.Size = UDim2.new(0.9,0,0,40)
@@ -447,15 +396,12 @@ slumpBtn.Text = "Load Slump Strap V2"
 slumpBtn.Font = Enum.Font.GothamBold
 slumpBtn.Parent = content
 Instance.new("UICorner", slumpBtn)
-
 slumpBtn.MouseButton1Click:Connect(function()
     loadstring(game:HttpGet("https://pastebin.com/raw/taU4FJnS"))()
 end)
-
 --=============================
 -- FONTS SECTION
 --=============================
-
 local fontTitle = Instance.new("TextLabel")
 fontTitle.Size = UDim2.new(0.9,0,0,30)
 fontTitle.BackgroundTransparency = 1
@@ -464,13 +410,11 @@ fontTitle.TextColor3 = Color3.fromRGB(150,150,150)
 fontTitle.Font = Enum.Font.GothamBold
 fontTitle.TextSize = 14
 fontTitle.Parent = content
-
 local fontsList = {
     "SourceSans","SourceSansBold","Gotham","GothamBold","Arcade","ArcadeBold",
     "Arial","ArialBold","Roboto","RobotoMono","Highway","HighwayBold",
     "GothamBlack","Cartoon","CartoonBold","Fantasy","FantasyBold","SciFi","SciFiBold","Code"
 }
-
 for _, fname in ipairs(fontsList) do
     local b = Instance.new("TextButton")
     b.Size = UDim2.new(0.9, 0, 0, 35)
@@ -480,7 +424,6 @@ for _, fname in ipairs(fontsList) do
     b.Font = Enum.Font.SourceSansBold
     b.Parent = content
     Instance.new("UICorner", b)
-
     b.MouseButton1Click:Connect(function()
         for _,v in pairs(game:GetDescendants()) do
             if v:IsA("TextLabel") or v:IsA("TextButton") or v:IsA("TextBox") then
@@ -489,7 +432,6 @@ for _, fname in ipairs(fontsList) do
         end
     end)
 end
-
 -- CONTROLLER FREEZE (At end to avoid loadstring hanging UI)
 createToggle("Controller Freeze", function(state)
     if state then
